@@ -10,7 +10,7 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
                   [key: 'action', value: '$.action'],
                   [key: 'head_branch', value: '$.pull_request.head.ref'],
                   [key: 'base_branch', value: '$.pull_request.base.ref'],
-                  [key: 'merged', value: '$.pull_request.merged'],
+                  [key: 'merged', value: '$.pull_request.merged']
               ],
               genericRequestVariables: [
                   [key: 'requestWithNumber', regexpFilter: '[^0-9]'],
@@ -98,7 +98,7 @@ node {
       test()
       runSecretsScanner()
       // runSonarScanner()
-      if("$merged") {
+      if("$merged".toBoolean()) {
         build()
       }
     }
