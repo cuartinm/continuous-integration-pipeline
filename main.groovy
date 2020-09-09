@@ -32,14 +32,8 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
 
 node {
  stage("build") {
-  sh '''
-  echo Variables from shell:
-  echo ref $ref
-  echo before $before
-  echo requestWithNumber $requestWithNumber
-  echo requestWithString $requestWithString
-  echo headerWithNumber $headerWithNumber
-  echo headerWithString $headerWithString
-  '''
+     echo "$ref"
+     echo "$before"
+     echo "$url"
  }
 }
