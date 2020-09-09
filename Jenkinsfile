@@ -9,7 +9,8 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
                   [key: 'clone_url', value: '$.repository.clone_url'],
                   [key: 'action', value: '$.action'],
                   [key: 'head_branch', value: '$.pull_request.head.ref'],
-                  [key: 'base_branch', value: '$.pull_request.base.ref']
+                  [key: 'base_branch', value: '$.pull_request.base.ref'],
+                  [key: 'merged', value: '$.pull_request.merged'],
               ],
               genericRequestVariables: [
                   [key: 'requestWithNumber', regexpFilter: '[^0-9]'],
@@ -75,15 +76,30 @@ def runSecretsScanner() {
 
 node {
   def error = null
-  def action = "$action"
+  def target_branch = ""
+  def pull_request = true
+
+  switch("$action") {
+    case "opened":
+      target_branch = "$head_branch"
+      break
+    case "closed":
+      target_branch = "$base_branch"
+      break
+    default:
+      pull_request = false
+      break
+}
+  
+
   try {
-    if (action=="opened" || action=="closed") {
-      checkout("$clone_url", "$head_branch")
+    if (pull_request) {
+      checkout("$clone_url", target_branch)
       test()
       runSecretsScanner()
-      if(env.BRANCH_NAME=="master" || env.BRANCH_NAME=="develop") {
+      // runSonarScanner()
+      if("$merged") {
         build()
-        // runSonarScanner()
       }
     }
   } catch(caughtError) {
