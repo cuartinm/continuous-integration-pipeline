@@ -34,6 +34,6 @@ node {
  stage("build") {
      echo "$ref"
      echo "$before"
-     echo "$url"
+     echo "$clone_url"
  }
 }
