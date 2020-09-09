@@ -43,6 +43,28 @@ def checkout() {
   }
 }
 
+def build() {
+  stage('Build Artifacts') {
+    sh "npm run-script build"
+  }
+}
+
+def test() {
+  stage('Unit Tests') {
+    sh "npm test"
+  }
+}
+
+def notifyBuild(currentBuild = 'SUCCESS') {
+
+}
+
+def runSecretsScanner() {
+  stage('Secrets Scan') {
+    sh returnStdout: true, script: 'git secrets --scan -r ./src'
+  }
+}
+
 // node {
 //  stage("build") {
 //      echo "$ref"
@@ -55,13 +77,13 @@ node {
   def error = null
   try {
     checkout()
-    // test(params.gradleTestCmd)
-    // runSecretsScanner()
-    // if(env.BRANCH_NAME=="master" || env.BRANCH_NAME=="develop") {
-    //     build(params.gradleBuildCmd)
-    //     // runSonarScanner()
+    test()
+    runSecretsScanner()
+    if(env.BRANCH_NAME=="master" || env.BRANCH_NAME=="develop") {
+        build()
+        // runSonarScanner()
 
-    // }
+    }
   } catch(caughtError) {
     currentBuild.result = 'FAILURE'
     error = caughtError
