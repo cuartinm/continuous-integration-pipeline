@@ -1,5 +1,10 @@
 #!/user/bin/env groovy
 
+properties([
+  pipelineTriggers([
+    githubPush(),
+  ])
+])
 
 def checkout(repo, credentials) {
   stage('Checkout') {
