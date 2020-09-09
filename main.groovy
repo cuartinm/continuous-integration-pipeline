@@ -36,7 +36,7 @@ def checkout() {
             $class: 'GitSCM',
             branches: scm.branches,
             extensions: scm.extensions + [[$class: 'LocalBranch'], [$class: 'WipeWorkspace']],
-            userRemoteConfigs: [[url: "$clone_url"]],
+            userRemoteConfigs: [[url: "$clone_url", refspec: "$ref"]],
             doGenerateSubmoduleConfigurations: false
         ])
     sh "npm i ."
@@ -64,14 +64,6 @@ def runSecretsScanner() {
     sh returnStdout: true, script: 'git secrets --scan -r ./src'
   }
 }
-
-// node {
-//  stage("build") {
-//      echo "$ref"
-//      echo "$before"
-//      echo "$clone_url"
-//  }
-// }
 
 node {
   def error = null
