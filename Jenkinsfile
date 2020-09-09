@@ -9,7 +9,7 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
                   [key: 'clone_url', value: '$.repository.clone_url'],
                   [key: 'action', value: '$.action'],
                   [key: 'head_branch', value: '$.pull_request.head.ref'],
-                  [key: 'base_branch', value: '$$.pull_request.base.ref']
+                  [key: 'base_branch', value: '$.pull_request.base.ref']
               ],
               genericRequestVariables: [
                   [key: 'requestWithNumber', regexpFilter: '[^0-9]'],
