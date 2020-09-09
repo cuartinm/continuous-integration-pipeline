@@ -6,10 +6,10 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
       pipelineTriggers([
           [$class: 'GenericTrigger',
               genericVariables: [
-                  [key: 'ref', value: '$.ref'],
-                  [key: 'before', value: '$.before'],
                   [key: 'clone_url', value: '$.repository.clone_url'],
-                  [key: 'pull_request', value: '$.pull_request']
+                  [key: 'action', value: '$.action'],
+                  [key: 'head_branch', value: '$.pull_request.head.ref'],
+                  [key: 'base_branch', value: '$$.pull_request.base.ref']
               ],
               genericRequestVariables: [
                   [key: 'requestWithNumber', regexpFilter: '[^0-9]'],
@@ -30,15 +30,23 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
   ])
 }
 
-def checkout() {
+def checkout(repo, branch) {
   stage('Checkout') {
-        checkout([
-            $class: 'GitSCM',
-            branches: scm.branches,
-            extensions: scm.extensions + [[$class: 'LocalBranch'], [$class: 'WipeWorkspace']],
-            userRemoteConfigs: [[url: "$clone_url"]],
-            doGenerateSubmoduleConfigurations: false
-        ])
+    checkout([
+      $class: 'GitSCM',
+      branches: [[name: branch]],
+      doGenerateSubmoduleConfigurations: false,
+      extensions: [[
+        $class: 'CloneOption',
+        noTags: false,
+        reference: '',
+        shallow: false
+      ]],
+      submoduleCfg: [],
+      userRemoteConfigs: [[
+        url: repo
+      ]]
+    ])
     sh "npm i ."
   }
 }
@@ -67,14 +75,16 @@ def runSecretsScanner() {
 
 node {
   def error = null
+  def action = "$action"
   try {
-    checkout()
-    test()
-    runSecretsScanner()
-    if(env.BRANCH_NAME=="master" || env.BRANCH_NAME=="develop") {
+    if (action=="opened" || action=="closed") {
+      checkout("$clone_url", "$head_branch")
+      test()
+      runSecretsScanner()
+      if(env.BRANCH_NAME=="master" || env.BRANCH_NAME=="develop") {
         build()
         // runSonarScanner()
-
+      }
     }
   } catch(caughtError) {
     currentBuild.result = 'FAILURE'
