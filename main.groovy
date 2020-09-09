@@ -30,10 +30,46 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
     ])
 }
 
+def checkout() {
+  stage('Checkout') {
+        checkout([
+            $class: 'GitSCM',
+            branches: scm.branches,
+            extensions: scm.extensions + [[$class: 'LocalBranch'], [$class: 'WipeWorkspace']],
+            userRemoteConfigs: [[url: "$clone_url"]],
+            doGenerateSubmoduleConfigurations: false
+        ])
+    sh "npm i ."
+  }
+}
+
+// node {
+//  stage("build") {
+//      echo "$ref"
+//      echo "$before"
+//      echo "$clone_url"
+//  }
+// }
+
 node {
- stage("build") {
-     echo "$ref"
-     echo "$before"
-     echo "$clone_url"
- }
+  def error = null
+  try {
+    checkout()
+    // test(params.gradleTestCmd)
+    // runSecretsScanner()
+    // if(env.BRANCH_NAME=="master" || env.BRANCH_NAME=="develop") {
+    //     build(params.gradleBuildCmd)
+    //     // runSonarScanner()
+
+    // }
+  } catch(caughtError) {
+    currentBuild.result = 'FAILURE'
+    error = caughtError
+  } finally {
+    notifyBuild(currentBuild.result)
+    if (error) {
+      throw error
+    }
+    cleanWs()
+  }
 }
