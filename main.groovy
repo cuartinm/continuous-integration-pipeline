@@ -28,8 +28,8 @@ node {
     printContributedVariables: true,
     printPostContent: true,
 
-    regexpFilterText: '$ref',
-    regexpFilterExpression: 'refs/heads/' + BRANCH_NAME
+    regexpFilterText: '$ref'
+    // regexpFilterExpression: 'refs/heads/' + BRANCH_NAME
    ]
   ])
  ])
