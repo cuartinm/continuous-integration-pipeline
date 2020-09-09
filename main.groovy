@@ -1,6 +1,7 @@
 #!/user/bin/env groovy
 
 node {
+
  properties([
   pipelineTriggers([
    [$class: 'GenericTrigger',
@@ -25,10 +26,14 @@ node {
 
     causeString: 'Triggered on $ref',
 
+    withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENERIC_WEBHOOK_TOKEN')]) {
+        token: "$GENERIC_WEBHOOK_TOKEN",
+    }
+
     printContributedVariables: true,
     printPostContent: true,
 
-    regexpFilterText: '$ref'
+    regexpFilterText: '$ref',
     // regexpFilterExpression: 'refs/heads/' + BRANCH_NAME
    ]
   ])
