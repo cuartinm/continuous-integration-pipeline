@@ -8,13 +8,8 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
             [$class: 'GenericTrigger',
                 genericVariables: [
                     [key: 'ref', value: '$.ref'],
-                    [
-                        key: 'before',
-                        value: '$.before',
-                        expressionType: 'JSONPath', //Optional, defaults to JSONPath
-                        regexpFilter: '', //Optional, defaults to empty string
-                        defaultValue: '' //Optional, defaults to empty string
-                    ]
+                    [key: 'before', value: '$.before'],
+                    [key: 'url', value: '$.url']
                 ],
                 genericRequestVariables: [
                     [key: 'requestWithNumber', regexpFilter: '[^0-9]'],
