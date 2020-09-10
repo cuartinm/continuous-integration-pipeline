@@ -120,6 +120,7 @@ def checkout(repo, branch) {
 def build() {
   stage('Build Artifacts') {
     try {
+      setGitHubStatus("build", "pending")
       def build_command = sh(script: "npm run-script build", returnStatus: true)
       setGitHubStatus("build", "success")
     } catch(Exception e) {
@@ -132,6 +133,7 @@ def build() {
 def test() {
   stage('Unit Tests') {
     try {
+      setGitHubStatus("unit-tests", "pending")
       def tests_command = sh(script: "npm test", returnStatus: true)
       setGitHubStatus("unit-tests", "success")
     } catch(Exception e) {
@@ -148,6 +150,7 @@ def notifyBuild(currentBuild = 'SUCCESS') {
 def runSecretsScanner() {
   stage('Secrets Scan') {
     try {
+      setGitHubStatus("git-secrets", "pending")
       def tests_command = sh(script: "git secrets --scan -r ./src", returnStatus: true)
       setGitHubStatus("git-secrets", "success")
     } catch(Exception e) {
