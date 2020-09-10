@@ -25,7 +25,6 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
         printContributedVariables: true,
         printPostContent: true,
         regexpFilterText: '$ref',
-        // regexpFilterExpression: 'refs/heads/' + BRANCH_NAME
       ]
     ])
   ])
@@ -88,16 +87,6 @@ def setGitHubStatus(context, state){
     } catch(Exception e){
       echo "Exception: ${e}"
     }           
-
-
-    // sh """
-    //   curl \
-    //   -X POST \
-    //   -H "Accept: application/vnd.github.v3+json" \
-    //   -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
-    //   $statuses_url \
-    //   -d '{"context":"$context", "state":"$state"}'
-    // """
   }
 }
 
