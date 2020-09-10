@@ -33,14 +33,17 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
 }
 
 def setGitHubStatus(context, state){
-  sh """
-    curl \
-    -X POST \
-    -H "Accept: application/vnd.github.v3+json" \
-    $statuses_url \
-    -d '{"context":"$context"}' \
-    -d '{"state":"$state"}'
-  """
+  withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
+    sh """
+      curl \
+      -X POST \
+      -H "Accept: application/vnd.github.v3+json" \
+      -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
+      $statuses_url \
+      -d '{"context":"$context"}' \
+      -d '{"state":"$state"}'
+    """
+  }
 }
 
 def checkout(repo, branch) {
