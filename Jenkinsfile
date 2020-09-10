@@ -3,32 +3,44 @@
 
 withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENERIC_WEBHOOK_TOKEN')]) {       
   properties([
-      pipelineTriggers([
-          [$class: 'GenericTrigger',
-              genericVariables: [
-                  [key: 'clone_url', value: '$.repository.clone_url'],
-                  [key: 'action', value: '$.action'],
-                  [key: 'head_branch', value: '$.pull_request.head.ref'],
-                  [key: 'base_branch', value: '$.pull_request.base.ref'],
-                  [key: 'merged', value: '$.pull_request.merged']
-              ],
-              genericRequestVariables: [
-                  [key: 'requestWithNumber', regexpFilter: '[^0-9]'],
-                  [key: 'requestWithString', regexpFilter: '']
-              ],
-              genericHeaderVariables: [
-                  [key: 'headerWithNumber', regexpFilter: '[^0-9]'],
-                  [key: 'headerWithString', regexpFilter: '']
-              ],
-              causeString: 'Triggered on $ref',
-              token: "$GENERIC_WEBHOOK_TOKEN",
-              printContributedVariables: true,
-              printPostContent: true,
-              regexpFilterText: '$ref',
-              // regexpFilterExpression: 'refs/heads/' + BRANCH_NAME
-          ]
-      ])
+    pipelineTriggers([
+      [$class: 'GenericTrigger',
+        genericVariables: [
+          [key: 'clone_url', value: '$.repository.clone_url'],
+          [key: 'action', value: '$.action'],
+          [key: 'head_branch', value: '$.pull_request.head.ref'],
+          [key: 'statuses_url', value: '$.pull_request.statuses_url'],
+          [key: 'base_branch', value: '$.pull_request.base.ref'],
+          [key: 'merged', value: '$.pull_request.merged']
+        ],
+        genericRequestVariables: [
+          [key: 'requestWithNumber', regexpFilter: '[^0-9]'],
+          [key: 'requestWithString', regexpFilter: '']
+        ],
+        genericHeaderVariables: [
+          [key: 'headerWithNumber', regexpFilter: '[^0-9]'],
+          [key: 'headerWithString', regexpFilter: '']
+        ],
+        causeString: 'Triggered on $ref',
+        token: "$GENERIC_WEBHOOK_TOKEN",
+        printContributedVariables: true,
+        printPostContent: true,
+        regexpFilterText: '$ref',
+        // regexpFilterExpression: 'refs/heads/' + BRANCH_NAME
+      ]
+    ])
   ])
+}
+
+def setGitHubStatus(context, state){
+  sh """
+    curl \
+    -X POST \
+    -H "Accept: application/vnd.github.v3+json" \
+    $statuses_url \
+    -d '{"context":"$context"}' \
+    -d '{"state":"$state"}'
+  """
 }
 
 def checkout(repo, branch) {
@@ -94,6 +106,7 @@ node {
 
   try {
     if (pull_request) {
+      setGitHubStatus("bavv-ci", "pending")
       checkout("$clone_url", target_branch)
       test()
       runSecretsScanner()
