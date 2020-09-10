@@ -15,7 +15,7 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
         token: "$GENERIC_WEBHOOK_TOKEN",
         causeString: "Triggered on $action pull request",
         printPostContent: false,
-        printContributedVariables: true,
+        printContributedVariables: false,
       ]
     ])
   ])
