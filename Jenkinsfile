@@ -121,9 +121,9 @@ def test() {
   stage('Unit Tests') {
     try {
       def tests_command = sh(script: "npm test", returnStatus: true)
-      setGitHubStatus("unit-test", "success")
+      setGitHubStatus("unit-tests", "success")
     } catch(Exception e) {
-      setGitHubStatus("unit-test", "failure")
+      setGitHubStatus("unit-tests", "failure")
       echo "Exception: ${e}"
     }
   }
