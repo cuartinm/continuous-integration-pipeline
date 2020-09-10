@@ -61,11 +61,11 @@ node {
 }
 
 
-def setGitHubStatus(context, state){
+def setGitHubStatus(context, state, description){
   withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {
 
     def builder = new groovy.json.JsonBuilder()
-    builder context: "$context", state: "$state"
+    builder context: "$context", state: "$state", description: "$description"
     try {
       def httpConn = new URL("$statuses_url").openConnection();
       httpConn.setRequestMethod("POST");
@@ -106,9 +106,9 @@ def build() {
   stage('Build Artifacts') {
     try {
       def build_command = sh(script: "npm run-script build", returnStatus: true)
-      setGitHubStatus("build", "success")
+      setGitHubStatus("build", "success", build_command)
     } catch(Exception e) {
-      setGitHubStatus("build", "failure")
+      setGitHubStatus("build", "failure", build_command)
       echo "Exception: ${e}"
     }
   }
@@ -118,9 +118,9 @@ def test() {
   stage('Unit Tests') {
     try {
       def tests_command = sh(script: "npm test", returnStatus: true)
-      setGitHubStatus("unit-tests", "success")
+      setGitHubStatus("unit-tests", "success", tests_command)
     } catch(Exception e) {
-      setGitHubStatus("unit-tests", "failure")
+      setGitHubStatus("unit-tests", "failure", tests_command)
       echo "Exception: ${e}"
     }
   }
@@ -133,10 +133,10 @@ def notifyBuild(currentBuild = 'SUCCESS') {
 def runSecretsScanner() {
   stage('Secrets Scan') {
     try {
-      def tests_command = sh(script: "git secrets --scan -r ./src", returnStatus: true)
-      setGitHubStatus("git-secrets", "success")
+      def secrets_command = sh(script: "git secrets --scan -r ./src", returnStatus: true)
+      setGitHubStatus("git-secrets", "success", secrets_command)
     } catch(Exception e) {
-      setGitHubStatus("git-secrets", "failure")
+      setGitHubStatus("git-secrets", "failure", secrets_command)
       echo "Exception: ${e}"
     }
   }
