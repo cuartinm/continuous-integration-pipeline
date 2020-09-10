@@ -50,8 +50,8 @@ def setGitHubStatus(context, state){
       -H "Accept: application/vnd.github.v3+json" \
       -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
       $statuses_url \
-      -d "{"context":"$context"}" \
-      -d "{"state":"$state"}"
+      -d "{\"context\":\"$context\"}" \
+      -d "{\"state\":\"$state\"}"
     """
   }
 }
