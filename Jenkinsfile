@@ -84,6 +84,7 @@ def setGitHubStatus(context, state){
     httpConn.setRequestProperty("Accept", "application/json");
     httpConn.setDoOutput(true);
     httpConn.getOutputStream().write(builder.toString().getBytes("UTF-8"));
+    return httpConn.getResponseCode();
 
     // sh """
     //   curl \
