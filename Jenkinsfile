@@ -1,6 +1,5 @@
 #!/user/bin/env groovy
 
-
 withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENERIC_WEBHOOK_TOKEN')]) {       
   properties([
     pipelineTriggers([
@@ -32,9 +31,48 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
   ])
 }
 
+node {
+  def error = null
+  def target_branch = ""
+  def pull_request = true
+
+  switch("$action") {
+    case "opened":
+      target_branch = "$head_branch"
+      break
+    case "closed":
+      target_branch = "$base_branch"
+      break
+    default:
+      pull_request = false
+      break
+  }
+  
+  try {
+    if (pull_request) {
+      checkout("$clone_url", target_branch)
+      test()
+      runSecretsScanner()
+      // runSonarScanner()
+      if("$merged".toBoolean()) {
+        build()
+      }
+    }
+  } catch(caughtError) {
+    currentBuild.result = 'FAILURE'
+    error = caughtError
+  } finally {
+    notifyBuild(currentBuild.result)
+    if (error) {
+      throw error
+    }
+    cleanWs()
+  }
+}
+
+
 def setGitHubStatus(context, state){
   withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {  
-
     sh """
       curl \
       -X POST \
@@ -69,13 +107,25 @@ def checkout(repo, branch) {
 
 def build() {
   stage('Build Artifacts') {
-    sh "npm run-script build"
+    try {
+      def build_command = sh(script: "npm run-script build", returnStatus: true)
+      setGitHubStatus("build", "success")
+    } catch(Exception e) {
+      setGitHubStatus("build", "failure")
+      echo "Exception: ${e}"
+    }
   }
 }
 
 def test() {
   stage('Unit Tests') {
-    sh "npm test"
+    try {
+      def tests_command = sh(script: "npm test", returnStatus: true)
+      setGitHubStatus("unit-test", "success")
+    } catch(Exception e) {
+      setGitHubStatus("unit-test", "failure")
+      echo "Exception: ${e}"
+    }
   }
 }
 
@@ -85,49 +135,12 @@ def notifyBuild(currentBuild = 'SUCCESS') {
 
 def runSecretsScanner() {
   stage('Secrets Scan') {
-    sh returnStdout: true, script: 'git secrets --scan -r ./src'
-  }
-}
-
-node {
-  def error = null
-  def target_branch = ""
-  def pull_request = true
-
-  switch("$action") {
-    case "opened":
-      target_branch = "$head_branch"
-      break
-    case "closed":
-      target_branch = "$base_branch"
-      break
-    default:
-      pull_request = false
-      break
-}
-  
-
-  try {
-    if (pull_request) {
-      setGitHubStatus("bavv-ci", "pending")
-      checkout("$clone_url", target_branch)
-      test()
-      runSecretsScanner()
-      // runSonarScanner()
-      if("$merged".toBoolean()) {
-        build()
-      }
-      setGitHubStatus("bavv-ci", "success")
+    try {
+      def tests_command = sh(script: "git secrets --scan -r ./src", returnStatus: true)
+      setGitHubStatus("git-secrets", "success")
+    } catch(Exception e) {
+      setGitHubStatus("git-secrets", "failure")
+      echo "Exception: ${e}"
     }
-  } catch(caughtError) {
-    currentBuild.result = 'FAILURE'
-    error = caughtError
-    setGitHubStatus("bavv-ci", "failure")
-  } finally {
-    notifyBuild(currentBuild.result)
-    if (error) {
-      throw error
-    }
-    cleanWs()
   }
 }
