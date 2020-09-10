@@ -33,15 +33,25 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
 }
 
 def setGitHubStatus(context, state){
-  withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
+  withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {  
+
+    // try {
+    //     def httpConn = new URL("$statuses_url").openConnection();
+    //     httpConn.setRequestProperty( 'Authorization', "token $GITHUB_ACCESS_TOKEN" )
+    //     httpConn.setRequestProperty( 'Accept', 'application/vnd.github.v3+json' )
+    //     httpConn.setRequestMethod("POST");
+    // } catch(Exception e){
+    //     echo "Exception: ${e}"
+    //     error "Failed to get a token"
+    // }
     sh """
       curl \
       -X POST \
       -H "Accept: application/vnd.github.v3+json" \
       -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
       $statuses_url \
-      -d '{"context":"$context"}' \
-      -d '{"state":"$state"}'
+      -d "{"context":"$context"}" \
+      -d "{"state":"$state"}"
     """
   }
 }
