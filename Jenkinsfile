@@ -76,15 +76,19 @@ def setGitHubStatus(context, state){
 
     def builder = new groovy.json.JsonBuilder()
     builder context: "$context", state: "$state"
+    try {
+      def httpConn = new URL("$statuses_url").openConnection();
+      httpConn.setRequestMethod("POST");
+      httpConn.setRequestProperty("Authorization", "token $GITHUB_ACCESS_TOKEN")
+      httpConn.setRequestProperty("Accept", "application/vnd.github.v3+json")
+      httpConn.setRequestProperty("Accept", "application/json");
+      httpConn.setDoOutput(true);
+      httpConn.getOutputStream().write(builder.toString().getBytes("UTF-8"));
+      return httpConn.getResponseCode();
+    } catch(Exception e){
+      echo "Exception: ${e}"
+    }           
 
-    def httpConn = new URL("$statuses_url").openConnection();
-    httpConn.setRequestMethod("POST");
-    httpConn.setRequestProperty("Authorization", "token $GITHUB_ACCESS_TOKEN")
-    httpConn.setRequestProperty("Accept", "application/vnd.github.v3+json")
-    httpConn.setRequestProperty("Accept", "application/json");
-    httpConn.setDoOutput(true);
-    httpConn.getOutputStream().write(builder.toString().getBytes("UTF-8"));
-    return httpConn.getResponseCode();
 
     // sh """
     //   curl \
@@ -121,7 +125,6 @@ def checkout(repo, branch) {
 def build() {
   stage('Build Artifacts') {
     try {
-      setGitHubStatus("build", "pending")
       def build_command = sh(script: "npm run-script build", returnStatus: true)
       setGitHubStatus("build", "success")
     } catch(Exception e) {
@@ -134,7 +137,6 @@ def build() {
 def test() {
   stage('Unit Tests') {
     try {
-      setGitHubStatus("unit-tests", "pending")
       def tests_command = sh(script: "npm test", returnStatus: true)
       setGitHubStatus("unit-tests", "success")
     } catch(Exception e) {
@@ -151,7 +153,6 @@ def notifyBuild(currentBuild = 'SUCCESS') {
 def runSecretsScanner() {
   stage('Secrets Scan') {
     try {
-      setGitHubStatus("git-secrets", "pending")
       def tests_command = sh(script: "git secrets --scan -r ./src", returnStatus: true)
       setGitHubStatus("git-secrets", "success")
     } catch(Exception e) {
