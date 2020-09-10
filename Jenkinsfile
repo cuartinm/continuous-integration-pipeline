@@ -65,7 +65,7 @@ def setGitHubStatus(context, state, description){
   withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {
 
     def builder = new groovy.json.JsonBuilder()
-    builder context: "$context", state: "$state", description: "$description", target_url: "${env.RUN_DISPLAY_URL}""
+    builder context: "$context", state: "$state", description: "$description", target_url: "${RUN_DISPLAY_URL}""
     try {
       def httpConn = new URL("$statuses_url").openConnection();
       httpConn.setRequestMethod("POST");
