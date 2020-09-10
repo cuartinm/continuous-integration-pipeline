@@ -72,15 +72,27 @@ node {
 
 
 def setGitHubStatus(context, state){
-  withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {  
-    sh """
-      curl \
-      -X POST \
-      -H "Accept: application/vnd.github.v3+json" \
-      -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
-      $statuses_url \
-      -d '{"context":"$context", "state":"$state"}'
-    """
+  withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {
+
+    def builder = new groovy.json.JsonBuilder()
+    builder context: "$context", state: "$state"
+
+    def httpConn = new URL("$statuses_url").openConnection();
+    httpConn.setRequestMethod("POST");
+    httpConn.setRequestProperty("Authorization", "token $GITHUB_ACCESS_TOKEN")
+    httpConn.setRequestProperty("Accept", "application/vnd.github.v3+json")
+    httpConn.setRequestProperty("Accept", "application/json");
+    httpConn.setDoOutput(true);
+    httpConn.getOutputStream().write(builder.toString().getBytes("UTF-8"));
+
+    // sh """
+    //   curl \
+    //   -X POST \
+    //   -H "Accept: application/vnd.github.v3+json" \
+    //   -H "Authorization: token $GITHUB_ACCESS_TOKEN" \
+    //   $statuses_url \
+    //   -d '{"context":"$context", "state":"$state"}'
+    // """
   }
 }
 
