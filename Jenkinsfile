@@ -47,12 +47,12 @@ node {
       if("$merged".toBoolean()) {
         build()
       }
-      setGitHubStatus("continuous-integration", "success", "your Job was successful. You can check your logs in the following link ->")
+      setGitHubStatus("continuous-integration", "success", "your Job was successful. You can check your logs in the following link ->", "${env.RUN_DISPLAY_URL}")
     }
   } catch(Exception e) {
     currentBuild.result = 'FAILURE'
     echo "Exception: ${e}"
-    setGitHubStatus("continuous-integration", "failure", "Your job failed. Please check your logs in the following link ->")
+    setGitHubStatus("continuous-integration", "failure", "Your job failed. Please check your logs in the following link ->", "${env.RUN_DISPLAY_URL}")
   } finally {
     notifyBuild(currentBuild.result)
     cleanWs()
@@ -60,11 +60,11 @@ node {
 }
 
 
-def setGitHubStatus(context, state, description){
+def setGitHubStatus(context, state, description, target_url){
   withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {
 
     def builder = new groovy.json.JsonBuilder()
-    builder context: "$context", state: "$state", description: "$description", target_url: "${env.RUN_DISPLAY_URL}"
+    builder context: "$context", state: "$state", description: "$description", target_url: "$target_url"
     try {
       def httpConn = new URL("$statuses_url").openConnection();
       httpConn.setRequestMethod("POST");
