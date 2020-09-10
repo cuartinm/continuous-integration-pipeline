@@ -47,15 +47,14 @@ node {
       if("$merged".toBoolean()) {
         build()
       }
+      setGitHubStatus("continuous-integration", "success", "your Job was successful. You can check your logs in the following link ->")
     }
-  } catch(caughtError) {
+  } catch(Exception e) {
     currentBuild.result = 'FAILURE'
-    error = caughtError
+    echo "Exception: ${e}"
+    setGitHubStatus("continuous-integration", "failure", "Your job failed. Please check your logs in the following link ->")
   } finally {
     notifyBuild(currentBuild.result)
-    if (error) {
-      throw error
-    }
     cleanWs()
   }
 }
@@ -106,9 +105,7 @@ def build() {
   stage('Build Artifacts') {
     try {
       def build_command = sh(script: "npm run-script build", returnStatus: true)
-      setGitHubStatus("build", "success", "build artifact")
     } catch(Exception e) {
-      setGitHubStatus("build", "failure", "build artifact")
       echo "Exception: ${e}"
     }
   }
@@ -118,9 +115,7 @@ def test() {
   stage('Unit Tests') {
     try {
       def tests_command = sh(script: "npm test", returnStatus: true)
-      setGitHubStatus("unit-tests", "success", "Run unit tests")
     } catch(Exception e) {
-      setGitHubStatus("unit-tests", "failure", "Run unit tests")
       echo "Exception: ${e}"
     }
   }
@@ -134,9 +129,7 @@ def runSecretsScanner() {
   stage('Secrets Scan') {
     try {
       def secrets_command = sh(script: "git secrets --scan -r ./src", returnStatus: true)
-      setGitHubStatus("git-secrets", "success", "Scan sources to precent adding secrets")
     } catch(Exception e) {
-      setGitHubStatus("git-secrets", "failure", "Scan sources to precent adding secrets")
       echo "Exception: ${e}"
     }
   }
