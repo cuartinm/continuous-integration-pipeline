@@ -1,6 +1,6 @@
 #!/user/bin/env groovy
 
-withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENERIC_WEBHOOK_TOKEN')]) {       
+withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI_GENERIC_WEBHOOK_TOKEN')]) {       
   properties([
     pipelineTriggers([
       [$class: 'GenericTrigger',
@@ -12,7 +12,7 @@ withCredentials([string(credentialsId: 'GENERIC_WEBHOOK_TOKEN', variable: 'GENER
           [key: 'base_branch', value: '$.pull_request.base.ref'],
           [key: 'merged', value: '$.pull_request.merged']
         ],
-        token: "$GENERIC_WEBHOOK_TOKEN",
+        token: "$CI_GENERIC_WEBHOOK_TOKEN",
         causeString: "Triggered on $action pull request",
         printPostContent: false,
         printContributedVariables: false,
