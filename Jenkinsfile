@@ -4,7 +4,9 @@ node {
   
   try {
     checkout("$clone_url", target_branch)
-    runSonarScanner()
+    test()
+    build()
+    // runSonarScanner()
   } catch(Exception e) {
     currentBuild.result = 'FAILURE'
     echo "Exception: ${e}"
@@ -48,16 +50,6 @@ def test() {
   stage('Unit Tests') {
     try {
       def tests_command = sh(script: "npm test", returnStatus: true)
-    } catch(Exception e) {
-      echo "Exception: ${e}"
-    }
-  }
-}
-
-def runSecretsScanner() {
-  stage('Secrets Scan') {
-    try {
-      def secrets_command = sh(script: "git secrets --scan -r ./src", returnStatus: true)
     } catch(Exception e) {
       echo "Exception: ${e}"
     }
