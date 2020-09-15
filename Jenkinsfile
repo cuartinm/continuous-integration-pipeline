@@ -5,8 +5,8 @@ node {
   try {
     checkout()
     test()
+    sonarqube()
     build()
-    // runSonarScanner()
   } catch(Exception e) {
     currentBuild.result = 'FAILURE'
     echo "Exception: ${e}"
@@ -53,5 +53,12 @@ def test() {
     } catch(Exception e) {
       echo "Exception: ${e}"
     }
+  }
+}
+
+def sonarqube() {
+  stage('SonarQube') {
+    def scannerHome = tool 'sonar-scanner'
+    sh "${scannerHome}/bin/sonar-scanner"
   }
 }
