@@ -3,7 +3,7 @@
 node {
   
   try {
-    checkout("$clone_url", target_branch)
+    checkout()
     test()
     build()
     // runSonarScanner()
@@ -15,7 +15,7 @@ node {
   }
 }
 
-def checkout(repo, branch) {
+def checkout() {
   stage('Checkout') {
     checkout([
       $class: 'GitSCM',
