@@ -55,7 +55,7 @@ node {
           state: "success",
           description: "your Job was successful. You can check your logs in the following link ->",
           target_url: "${env.RUN_DISPLAY_URL}",
-          github_access_token: "$GITHUB_ACCESS_TOKEN"
+          github_access_token: "$GITHUB_ACCESS_TOKEN",
           statuses_url: "$statuses_url"
         )
       }
