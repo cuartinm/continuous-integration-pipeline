@@ -58,40 +58,26 @@ node {
                     github_access_token: "$GITHUB_ACCESS_TOKEN",
                     statuses_url: "$statuses_url"
                     )
-        echo "$code"
       }
-      // setGitHubStatus("continuous-integration", "success", "your Job was successful. You can check your logs in the following link ->", "${env.RUN_DISPLAY_URL}")
     }
   } catch(Exception e) {
     currentBuild.result = 'FAILURE'
     echo "Exception: ${e}"
-    // setGitHubStatus("continuous-integration", "failure", "Your job failed. Please check your logs in the following link ->", "${env.RUN_DISPLAY_URL}")
+    withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
+      def code = gitHubStatus(
+                  context: "continuous-integration",
+                  state: "failure",
+                  description: "Your job failed. Please check your logs in the following link ->",
+                  target_url: "${env.RUN_DISPLAY_URL}",
+                  github_access_token: "$GITHUB_ACCESS_TOKEN",
+                  statuses_url: "$statuses_url"
+                  )
+    }
   } finally {
     notifyBuild(currentBuild.result)
     cleanWs()
   }
 }
-
-
-// def setGitHubStatus(context, state, description, target_url){
-//   withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {
-
-//     def builder = new groovy.json.JsonBuilder()
-//     builder context: "$context", state: "$state", description: "$description", target_url: "$target_url"
-//     try {
-//       def httpConn = new URL("$statuses_url").openConnection();
-//       httpConn.setRequestMethod("POST");
-//       httpConn.setRequestProperty("Authorization", "token $GITHUB_ACCESS_TOKEN")
-//       httpConn.setRequestProperty("Accept", "application/vnd.github.v3+json")
-//       httpConn.setRequestProperty("Accept", "application/json");
-//       httpConn.setDoOutput(true);
-//       httpConn.getOutputStream().write(builder.toString().getBytes("UTF-8"));
-//       return httpConn.getResponseCode();
-//     } catch(Exception e){
-//       echo "Exception: ${e}"
-//     }           
-//   }
-// }
 
 def checkout(repo, branch) {
   stage('Checkout') {
