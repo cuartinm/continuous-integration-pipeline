@@ -50,14 +50,15 @@ node {
         build()
       }
       withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
-        gitHubStatus(
-          context: "continuous-integration",
-          state: "success",
-          description: "your Job was successful. You can check your logs in the following link ->",
-          target_url: "${env.RUN_DISPLAY_URL}",
-          github_access_token: "$GITHUB_ACCESS_TOKEN",
-          statuses_url: "$statuses_url"
-        )
+        def code = gitHubStatus(
+                    context: "continuous-integration",
+                    state: "success",
+                    description: "your Job was successful. You can check your logs in the following link ->",
+                    target_url: "${env.RUN_DISPLAY_URL}",
+                    github_access_token: "$GITHUB_ACCESS_TOKEN",
+                    statuses_url: "$statuses_url"
+                    )
+        echo "$code"
       }
       // setGitHubStatus("continuous-integration", "success", "your Job was successful. You can check your logs in the following link ->", "${env.RUN_DISPLAY_URL}")
     }
