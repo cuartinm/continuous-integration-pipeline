@@ -56,6 +56,7 @@ node {
           description: "your Job was successful. You can check your logs in the following link ->",
           target_url: "${env.RUN_DISPLAY_URL}",
           github_access_token: "$GITHUB_ACCESS_TOKEN"
+          statuses_url: "$statuses_url"
         )
       }
       // setGitHubStatus("continuous-integration", "success", "your Job was successful. You can check your logs in the following link ->", "${env.RUN_DISPLAY_URL}")
