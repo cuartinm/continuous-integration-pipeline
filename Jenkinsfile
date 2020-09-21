@@ -24,28 +24,13 @@ withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI
 }
 
 node {
-  def error = null
-  def target_branch = ""
-  def pull_request = true
-
-  switch("$action") {
-    case "opened":
-      target_branch = "$head_branch"
-      break
-    case "closed":
-      target_branch = "$base_branch"
-      break
-    default:
-      pull_request = false
-      break
-  }
   
   try {
     if (pull_request) {
       checkout("$clone_url", target_branch)
       test()
       runSecretsScanner()
-      // runSonarScanner()
+      sonarqube()
       if("$merged".toBoolean()) {
         build()
       }
@@ -74,7 +59,6 @@ node {
                   )
     }
   } finally {
-    notifyBuild(currentBuild.result)
     cleanWs()
   }
 }
@@ -83,7 +67,7 @@ def checkout(repo, branch) {
   stage('Checkout') {
     checkout([
       $class: 'GitSCM',
-      branches: [[name: branch]],
+      branches: [[name: "master"]],
       doGenerateSubmoduleConfigurations: false,
       extensions: [[
         $class: 'CloneOption',
@@ -93,7 +77,7 @@ def checkout(repo, branch) {
       ]],
       submoduleCfg: [],
       userRemoteConfigs: [[
-        url: repo
+        url: "https://github.com/cuartinm/angular-demo-app.git"
       ]]
     ])
     sh "npm i ."
@@ -120,16 +104,17 @@ def test() {
   }
 }
 
-def notifyBuild(currentBuild = 'SUCCESS') {
-
-}
-
-def runSecretsScanner() {
-  stage('Secrets Scan') {
-    try {
-      def secrets_command = sh(script: "git secrets --scan -r ./src", returnStatus: true)
-    } catch(Exception e) {
-      echo "Exception: ${e}"
+def sonarqube() {
+  stage('SonarQube') {
+    withSonarQubeEnv('SonarQube Server') {
+      def scannerHome = tool 'sonar-scanner'
+      sh "${scannerHome}/bin/sonar-scanner"
+    }
+    timeout(time: 5, unit: 'MINUTES') {
+       def qg = waitForQualityGate()
+        if (qg.status != 'OK') {
+          error "Pipeline aborted due to quality gate failure: ${qg.status}"
+        }
     }
   }
 }
