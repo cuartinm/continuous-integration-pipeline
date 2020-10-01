@@ -24,7 +24,22 @@ withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI
 }
 
 node {
-  
+  def error = null
+  def target_branch = ""
+  def pull_request = true
+
+  switch("$action") {
+    case "opened":
+      target_branch = "$head_branch"
+      break
+    case "closed":
+      target_branch = "$base_branch"
+      break
+    default:
+      pull_request = false
+      break
+  }
+
   try {
     if (pull_request) {
       checkout("$clone_url", target_branch)
@@ -67,7 +82,7 @@ def checkout(repo, branch) {
   stage('Checkout') {
     checkout([
       $class: 'GitSCM',
-      branches: [[name: "master"]],
+      branches: [[name: branch]],
       doGenerateSubmoduleConfigurations: false,
       extensions: [[
         $class: 'CloneOption',
@@ -77,7 +92,7 @@ def checkout(repo, branch) {
       ]],
       submoduleCfg: [],
       userRemoteConfigs: [[
-        url: "https://github.com/cuartinm/angular-demo-app.git"
+        url: repo
       ]]
     ])
     sh "npm i ."
@@ -111,10 +126,10 @@ def sonarqube() {
       sh "${scannerHome}/bin/sonar-scanner"
     }
     timeout(time: 5, unit: 'MINUTES') {
-       def qg = waitForQualityGate()
-        if (qg.status != 'OK') {
-          error "Pipeline aborted due to quality gate failure: ${qg.status}"
-        }
+      def qg = waitForQualityGate()
+      if (qg.status != 'OK') {
+        error "Pipeline aborted due to quality gate failure: ${qg.status}"
+      }
     }
   }
 }
