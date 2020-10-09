@@ -12,28 +12,27 @@ withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI
           [key: 'head_branch', value: '$.pull_request.head.ref'],
           [key: 'statuses_url', value: '$.pull_request.statuses_url'],
           [key: 'base_branch', value: '$.pull_request.base.ref'],
-          [key: 'merged', value: '$.pull_request.merged']
+          [key: 'merged', value: '$.pull_request.merged'],
+          [key: 'repo_name', value: '$.pull_request.head.repo.name']
         ],
         token: "$CI_GENERIC_WEBHOOK_TOKEN",
         causeString: "Triggered on $action pull request",
         printPostContent: false,
         printContributedVariables: false,
+        regexpFilterText: '$base_branch',
+        regexpFilterExpression: 'develop'
       ]
     ])
   ])
 }
 
 node {
-  def error = null
   def target_branch = ""
   def pull_request = true
 
   switch("$action") {
     case "opened":
       target_branch = "$head_branch"
-      break
-    case "closed":
-      target_branch = "$base_branch"
       break
     default:
       pull_request = false
@@ -42,10 +41,19 @@ node {
 
   try {
     if (pull_request) {
-      checkout("$clone_url", target_branch)
+      
+      gitCheckout(
+        repository: "$clone_url",
+        branch: "$target_branch"
+      )
+
       test()
-      runSecretsScanner()
-      sonarqube()
+
+      sonarQubeScan(
+        projectKey: "",
+        src: ""
+      )
+      
       if("$merged".toBoolean()) {
         build()
       }
@@ -102,7 +110,7 @@ def checkout(repo, branch) {
 def build() {
   stage('Build Artifacts') {
     try {
-      def build_command = sh(script: "npm run-script build", returnStatus: true)
+      sh(script: "npm run-script build", returnStatus: true)
     } catch(Exception e) {
       echo "Exception: ${e}"
     }
@@ -112,24 +120,9 @@ def build() {
 def test() {
   stage('Unit Tests') {
     try {
-      def tests_command = sh(script: "npm test", returnStatus: true)
+      sh(script: "npm test", returnStatus: true)
     } catch(Exception e) {
       echo "Exception: ${e}"
-    }
-  }
-}
-
-def sonarqube() {
-  stage('SonarQube') {
-    withSonarQubeEnv('SonarQube Server') {
-      def scannerHome = tool 'sonar-scanner'
-      sh "${scannerHome}/bin/sonar-scanner"
-    }
-    timeout(time: 5, unit: 'MINUTES') {
-      def qg = waitForQualityGate()
-      if (qg.status != 'OK') {
-        error "Pipeline aborted due to quality gate failure: ${qg.status}"
-      }
     }
   }
 }
