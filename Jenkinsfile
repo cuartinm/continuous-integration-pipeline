@@ -39,36 +39,45 @@ node {
     )
     npmInit()
     npmTest()
-    // sonarQubeScan(
-    //   projectKey: "angular-demo-project",
-    //   src: "./src"
-    // )
+    sonarQubeScan(
+      projectKey: "angular-demo-project",
+      src: "./src"
+    )
     if("$merged".toBoolean()) {
       npmBuild()
+      uploadArtifact(
+        username: "",
+        password: "",
+        artifactory_url: "",
+        repository: "",
+        application: "",
+        version: "",
+        artifact: ""
+      )
     }
 
     withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
-      def code = gitHubStatus(
-                  context: "continuous-integration",
-                  state: "success",
-                  description: "your Job was successful. You can check your logs in the following link ->",
-                  target_url: "${env.RUN_DISPLAY_URL}",
-                  github_access_token: "$GITHUB_ACCESS_TOKEN",
-                  statuses_url: "$statuses_url"
-                  )
+      gitHubStatus(
+        context: "continuous-integration",
+        state: "success",
+        description: "your Job was successful. You can check your logs in the following link ->",
+        target_url: "${env.RUN_DISPLAY_URL}",
+        github_access_token: "$GITHUB_ACCESS_TOKEN",
+        statuses_url: "$statuses_url"
+      )
     }
   } catch(Exception e) {
     currentBuild.result = 'FAILURE'
     echo "Exception: ${e}"
     withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
-      def code = gitHubStatus(
-                  context: "continuous-integration",
-                  state: "failure",
-                  description: "Your job failed. Please check your logs in the following link ->",
-                  target_url: "${env.RUN_DISPLAY_URL}",
-                  github_access_token: "$GITHUB_ACCESS_TOKEN",
-                  statuses_url: "$statuses_url"
-                  )
+      gitHubStatus(
+        context: "continuous-integration",
+        state: "failure",
+        description: "Your job failed. Please check your logs in the following link ->",
+        target_url: "${env.RUN_DISPLAY_URL}",
+        github_access_token: "$GITHUB_ACCESS_TOKEN",
+        statuses_url: "$statuses_url"
+      )
     }
   } finally {
     cleanWs()
