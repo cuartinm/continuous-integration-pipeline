@@ -33,26 +33,33 @@ node {
   }
 
   try {
+
     gitCheckout(
       repository: "$clone_url",
       branch: "$target_branch"
     )
+
     npmInit()
+
     npmTest()
+
     sonarQubeScan(
       projectKey: "angular-demo-project",
       src: "./src"
     )
+
     if("$merged".toBoolean()) {
       npmBuild()
+      def props = readJSON file: 'package.json'
       uploadArtifact(
-        username: "",
-        password: "",
-        artifactory_url: "",
-        repository: "",
-        application: "",
-        version: "",
-        artifact: ""
+        username: "macuartin@gmail.com",
+        password: "AP8fnUEUEdJ7UVbRVpFVWQxJfyn",
+        artifactory_url: "https://macuartin.jfrog.io",
+        repository: "generic-local",
+        application: "${props.name}",
+        version: "${props.version}",
+        artifact: "${props.name}-${props.version}.tar.gz"
+        target: "dist/${props.name}-${props.version}.tar.gz"
       )
     }
 
@@ -66,6 +73,7 @@ node {
         statuses_url: "$statuses_url"
       )
     }
+
   } catch(Exception e) {
     currentBuild.result = 'FAILURE'
     echo "Exception: ${e}"
