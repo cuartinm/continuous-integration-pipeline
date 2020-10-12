@@ -53,7 +53,7 @@ node {
       def props = readJSON file: 'package.json'
       uploadArtifact(
         username: "macuartin@gmail.com",
-        password: "AP8fnUEUEdJ7UVbRVpFVWQxJfyn",
+        password: "",
         artifactory_url: "https://macuartin.jfrog.io/artifactory",
         repository: "generic-local",
         application: "${props.name}",
