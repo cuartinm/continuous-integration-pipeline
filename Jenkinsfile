@@ -18,49 +18,38 @@ withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI
         causeString: "Triggered on $action pull request",
         printPostContent: false,
         printContributedVariables: false,
-        regexpFilterExpression: '^(develop|master)*?$',
-        regexpFilterText: '$base_branch'
+        regexpFilterExpression: '^((false (opened|reopened|synchronize))|(true (closed)))? (develop|master)?$',
+        regexpFilterText: '$merged $action $base_branch'
       ]
     ])
   ])
 }
 
 node {
-  def error = null
-  def target_branch = ""
-  def pull_request = true
+  def target_branch = "$head_branch"
 
-  switch("$action") {
-    case "opened":
-      target_branch = "$head_branch"
-      break
-    case "closed":
-      target_branch = "$base_branch"
-      break
-    default:
-      pull_request = false
-      break
+  if ("$action" == "closed") {
+    target_branch = "$base_branch"
   }
 
   try {
-    if (pull_request) {
-      checkout("$clone_url", target_branch)
-      test()
-      runSecretsScanner()
-      sonarqube()
-      if("$merged".toBoolean()) {
-        build()
-      }
-      withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
-        def code = gitHubStatus(
-                    context: "continuous-integration",
-                    state: "success",
-                    description: "your Job was successful. You can check your logs in the following link ->",
-                    target_url: "${env.RUN_DISPLAY_URL}",
-                    github_access_token: "$GITHUB_ACCESS_TOKEN",
-                    statuses_url: "$statuses_url"
-                    )
-      }
+    checkout("$clone_url", target_branch)
+    test()
+    sonarqube()
+
+    if("$merged".toBoolean()) {
+      build()
+    }
+    
+    withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
+      def code = gitHubStatus(
+                  context: "continuous-integration",
+                  state: "success",
+                  description: "your Job was successful. You can check your logs in the following link ->",
+                  target_url: "${env.RUN_DISPLAY_URL}",
+                  github_access_token: "$GITHUB_ACCESS_TOKEN",
+                  statuses_url: "$statuses_url"
+                  )
     }
   } catch(Exception e) {
     currentBuild.result = 'FAILURE'
