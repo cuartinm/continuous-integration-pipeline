@@ -48,10 +48,10 @@ node {
 
     if (fileExists('package.json')) {
       def props = readJSON file: 'package.json'
-      repository = "generic-local",
-      application = "${props.name}",
-      version = "${props.version}",
-      artifact = "${props.name}-${props.version}.tar.gz",
+      repository = "generic-local"
+      application = "${props.name}"
+      version = "${props.version}"
+      artifact = "${props.name}-${props.version}.tar.gz"
       target = "dist/${props.name}-${props.version}.tar.gz"
       manager = "npm"
     }
