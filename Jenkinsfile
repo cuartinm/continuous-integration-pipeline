@@ -39,10 +39,10 @@ node {
     )
     npmInit()
     npmTest()
-    sonarQubeScan(
-      projectKey: "angular-demo-project",
-      src: "./src"
-    )
+    // sonarQubeScan(
+    //   projectKey: "angular-demo-project",
+    //   src: "./src"
+    // )
     npmBuild()
     if("$merged".toBoolean()) {
       build()
