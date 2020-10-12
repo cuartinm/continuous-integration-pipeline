@@ -60,10 +60,10 @@ node {
 
     unitTests(manager: "${manager}")
 
-    sonarQubeScan(
-      projectKey: "${application}",
-      src: "./src"
-    )
+    // sonarQubeScan(
+    //   projectKey: "${application}",
+    //   src: "./src"
+    // )
 
     if("$merged".toBoolean()) {
       buildArtifact(manager: "${manager}")
