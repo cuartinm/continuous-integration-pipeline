@@ -46,7 +46,7 @@ node {
       branch: "$target_branch"
     )
 
-    if (fileExists 'package.json') {
+    if (fileExists('package.json')) {
       def props = readJSON file: 'package.json'
       repository = "generic-local",
       application = "${props.name}",
