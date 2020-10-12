@@ -19,8 +19,8 @@ withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI
         causeString: "Triggered on $action pull request",
         printPostContent: false,
         printContributedVariables: false,
-        regexpFilterExpression: '^(develop|master)*?$',
-        regexpFilterText: '$base_branch'
+        // regexpFilterExpression: '^(develop|master)*?$',
+        // regexpFilterText: '$base_branch'
       ]
     ])
   ])
