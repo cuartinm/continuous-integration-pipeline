@@ -20,7 +20,7 @@ withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI
         printPostContent: false,
         printContributedVariables: false,
         regexpFilterText: '$base_branch',
-        regexpFilterExpression: 'develop'
+        regexpFilterExpression: '^(develop|master)*?$'
       ]
     ])
   ])
