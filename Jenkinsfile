@@ -43,9 +43,8 @@ node {
     //   projectKey: "angular-demo-project",
     //   src: "./src"
     // )
-    npmBuild()
     if("$merged".toBoolean()) {
-      build()
+      npmBuild()
     }
 
     withCredentials([string(credentialsId: 'GITHUB_ACCESS_TOKEN', variable: 'GITHUB_ACCESS_TOKEN')]) {       
