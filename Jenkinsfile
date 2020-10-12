@@ -54,7 +54,7 @@ node {
       uploadArtifact(
         username: "macuartin@gmail.com",
         password: "AP8fnUEUEdJ7UVbRVpFVWQxJfyn",
-        artifactory_url: "https://macuartin.jfrog.io",
+        artifactory_url: "https://macuartin.jfrog.io/artifactory",
         repository: "generic-local",
         application: "${props.name}",
         version: "${props.version}",
