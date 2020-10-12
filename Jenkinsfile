@@ -26,6 +26,13 @@ withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI
 }
 
 node {
+    def repository
+    def application
+    def version
+    def artifact
+    def target
+    def manager
+
   def target_branch = "$head_branch"
 
   if ("$action" == "closed") {
@@ -39,27 +46,36 @@ node {
       branch: "$target_branch"
     )
 
-    npmInit()
+    if (fileExists 'package.json') {
+      def props = readJSON file: 'package.json'
+      repository = "generic-local",
+      application = "${props.name}",
+      version = "${props.version}",
+      artifact = "${props.name}-${props.version}.tar.gz",
+      target = "dist/${props.name}-${props.version}.tar.gz"
+      manager = "npm"
+    }
 
-    npmTest()
+    installDependencies(manager: "${manager}")
 
-    // sonarQubeScan(
-    //   projectKey: "angular-demo-project",
-    //   src: "./src"
-    // )
+    unitTests(manager: "${manager}")
+
+    sonarQubeScan(
+      projectKey: "${application}",
+      src: "./src"
+    )
 
     if("$merged".toBoolean()) {
-      npmBuild()
-      def props = readJSON file: 'package.json'
+      buildArtifact(manager: "${manager}")
       uploadArtifact(
         username: "macuartin@gmail.com",
-        password: "",
+        password: "AP8fnUEUEdJ7UVbRVpFVWQxJfyn",
         artifactory_url: "https://macuartin.jfrog.io/artifactory",
-        repository: "generic-local",
-        application: "${props.name}",
-        version: "${props.version}",
-        artifact: "${props.name}-${props.version}.tar.gz",
-        target: "dist/${props.name}-${props.version}.tar.gz"
+        repository: "${repository}",
+        application: "${application}",
+        version: "${version}",
+        artifact: "${artifact}",
+        target: "${target}"
       )
     }
 
