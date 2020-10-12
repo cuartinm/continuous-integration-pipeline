@@ -58,7 +58,7 @@ node {
         repository: "generic-local",
         application: "${props.name}",
         version: "${props.version}",
-        artifact: "${props.name}-${props.version}.tar.gz"
+        artifact: "${props.name}-${props.version}.tar.gz",
         target: "dist/${props.name}-${props.version}.tar.gz"
       )
     }
