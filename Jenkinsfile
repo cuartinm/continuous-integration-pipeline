@@ -50,7 +50,7 @@ node {
       def props = readJSON file: 'package.json'
       repository = "generic-local"
       application = "${props.name}"
-      version = "${props.version}"
+      version = "${target_branch}/${props.version}"
       artifact = "${props.name}-${props.version}.tar.gz"
       target = "dist/${props.name}-${props.version}.tar.gz"
       manager = "npm"
