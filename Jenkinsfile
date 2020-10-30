@@ -26,12 +26,12 @@ withCredentials([string(credentialsId: 'CI_GENERIC_WEBHOOK_TOKEN', variable: 'CI
 }
 
 node {
-    def repository
-    def application
-    def version
-    def artifact
-    def target
-    def manager
+  def repository
+  def application
+  def version
+  def artifact
+  def target
+  def manager
 
   def target_branch = "$head_branch"
 
